@@ -1,0 +1,11 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Java build
+out/
+*.class
+
+# C++ build
+*.exe
+src/engine/build/
