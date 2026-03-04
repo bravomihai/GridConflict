@@ -6,6 +6,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Button?>
 <VBox alignment="TOP_CENTER" spacing="20"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="ui.setup.SetupController" fx:id="root">
@@ -64,6 +65,9 @@
         <VBox alignment="CENTER" spacing="20"
               HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <Label text="insert object stats"></Label>
+            <VBox fx:id="objectContainer">
+                <Button fx:id="addButton" text="+" onAction="#handleAddObject"/>
+            </VBox>
         </VBox>
 
         <!--monster pannel-->
