@@ -1,58 +1,56 @@
 package ui.components;
 
 import javafx.scene.control.Button;
-import javafx.scene.control.Spinner;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.TextField;
 import model.Item;
 import ui.util.UIHelpers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ObjectRow {
 
-    private HBox root;
+    private List<TextField> fields;
 
     //coordinates
-    private Spinner<Integer> row;
-    private Spinner<Integer> col;
+    private TextField row;
+    private TextField col;
 
     //stats differences made by object
-    private Spinner<Integer> dH;
-    private Spinner<Integer> dA;
-    private Spinner<Integer> dD;
-    private Spinner<Integer> dS;
+    private TextField dH;
+    private TextField dA;
+    private TextField dD;
+    private TextField dS;
 
     private Button remove;
 
     public ObjectRow() {
+        fields = new ArrayList<TextField>();
 
-        root = new HBox(10);
-        row = new Spinner<>();
-        col = new Spinner<>();
-        dH = new Spinner<>();
-        dA = new Spinner<>();
-        dD = new Spinner<>();
-        dS = new Spinner<>();
+        row = UIHelpers.configureTextField(0, 999, 0);
+        col = UIHelpers.configureTextField(0, 999, 0);
+        dH = UIHelpers.configureTextField(0, 999, 0);
+        dA = UIHelpers.configureTextField(0, 999, 0);
+        dD = UIHelpers.configureTextField(0, 999, 0);
+        dS = UIHelpers.configureTextField(0, 999, 0);
 
-        UIHelpers.configureSpinner(row, 0, 999, 0);
-        UIHelpers.configureSpinner(col, 0, 999, 0);
-        UIHelpers.configureSpinner(dH, 0, 999, 0);
-        UIHelpers.configureSpinner(dA, 0, 999, 0);
-        UIHelpers.configureSpinner(dD, 0, 999, 0);
-        UIHelpers.configureSpinner(dS, 0, 999, 0);
+        fields.addAll(List.of(row, col, dH, dA, dD, dS));
 
-
-        root.getChildren().addAll(row, col, dH, dA, dD, dS);
+        remove = new Button("X");
     }
 
-    public HBox getNode() {
-        return root;
+    public List<TextField> getFields() {
+        return fields;
     }
 
     public Item toItem() {
         return new Item(
-                dH.getValue(),
-                dA.getValue(),
-                dD.getValue(),
-                dS.getValue()
+                Integer.parseInt(dH.getText()),
+                Integer.parseInt(dA.getText()),
+                Integer.parseInt(dD.getText()),
+                Integer.parseInt(dS.getText())
         );
     }
+
+    public Button getRemoveButton() {return remove; }
 }
