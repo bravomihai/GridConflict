@@ -22,7 +22,7 @@ public class Main {
                 "A A4 m C2 m C6 m E2 m E6 o0 D4 o1 B4 B G4";
 
         NativeEngine engine =
-                new NativeEngine("src/engine/build/grid_conflict.exe");
+                new NativeEngine("engine/build/grid_conflict.exe");
 
         while (gs.players[0].H > 0 && gs.players[1].H > 0 && gs.consecutivePassRounds < 10) {
 
