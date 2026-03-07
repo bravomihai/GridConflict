@@ -79,4 +79,10 @@
 
     </HBox>
 
+    <Button fx:id="backToMenuButton" text="Back" onAction="#handleBackToMenu"/>
+
+    <padding>
+        <Insets top="20"/>
+    </padding>
+
 </VBox>

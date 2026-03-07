@@ -25,8 +25,11 @@ public class UIHelpers {
 
             int value = Integer.parseInt(newText);
 
-            if (value < range.getMin() || value > range.getMax()) {
-                return null;
+            int clamped = Math.max(range.getMin(), Math.min(value, range.getMax()));
+
+            if (clamped != value) {
+                change.setRange(0, change.getControlText().length());
+                change.setText(String.valueOf(clamped));
             }
 
             return change;
@@ -56,8 +59,11 @@ public class UIHelpers {
 
             int value = Integer.parseInt(newText);
 
-            if (value < range.getMin() || value > range.getMax()) {
-                return null;
+            int clamped = Math.max(range.getMin(), Math.min(value, range.getMax()));
+
+            if (clamped != value) {
+                change.setRange(0, change.getControlText().length());
+                change.setText(String.valueOf(clamped));
             }
 
             return change;

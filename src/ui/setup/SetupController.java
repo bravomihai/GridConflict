@@ -12,6 +12,7 @@ import javafx.scene.control.Label;
 import org.w3c.dom.Text;
 import ui.components.MonsterRow;
 import ui.components.PlayerRow;
+import ui.core.SceneController;
 import ui.util.UIHelpers;
 import ui.components.ObjectRow;
 import util.IntRange;
@@ -40,6 +41,8 @@ public class SetupController {
     @FXML private Button addMonsterButton;
     List<MonsterRow> monsterRows = new ArrayList<>();
 
+    @FXML private Button backToMenuButton;
+
     @FXML
     private void initialize() {
         //init map grid
@@ -55,7 +58,7 @@ public class SetupController {
             updateCoordinateLimits();
         });
 
-        //init player grid
+        //init player grid (no function since its only done once)
         playerGrid.add(new Label("Row"), 1, 0);
         playerGrid.add(new Label("Column"), 2, 0);
         playerGrid.add(new Label("Health"), 3, 0);
@@ -76,23 +79,9 @@ public class SetupController {
         }
 
         playerRows.addAll(List.of(A, B));
-
-        //init object grid
-        objectGrid.add(new Label("Row"), 1, 0);
-        objectGrid.add(new Label("Column"), 2, 0);
-        objectGrid.add(new Label("Health"), 3, 0);
-        objectGrid.add(new Label("Attack"), 4, 0);
-        objectGrid.add(new Label("Defense"), 5, 0);
-        objectGrid.add(new Label("Stamina"), 6, 0);
-
-        //init monster spinners
-        monsterGrid.add(new Label("Row"), 1, 0);
-        monsterGrid.add(new Label("Column"), 2, 0);
     }
 
     private void updateCoordinateLimits() {
-
-
 
         int height = Integer.parseInt(mapHeightField.getText());
         int width = Integer.parseInt(mapWidthField.getText());
@@ -105,11 +94,21 @@ public class SetupController {
 
     }
 
+    private void initObjectGrid(){
+        objectGrid.add(new Label("Row"), 1, 0);
+        objectGrid.add(new Label("Column"), 2, 0);
+        objectGrid.add(new Label("Health"), 3, 0);
+        objectGrid.add(new Label("Attack"), 4, 0);
+        objectGrid.add(new Label("Defense"), 5, 0);
+        objectGrid.add(new Label("Stamina"), 6, 0);
+    }
+
     private void refreshObjectGrid(){
-        objectGrid.getChildren().removeIf(node ->
-                GridPane.getRowIndex(node) != null &&
-                        GridPane.getRowIndex(node) > 0
-        );
+        objectGrid.getChildren().clear();
+
+        if(!objectRows.isEmpty()){
+            initObjectGrid();
+        }
 
         if(objectRows.size() < 10){
             addObjectButton.setDisable(false);
@@ -146,11 +145,17 @@ public class SetupController {
         refreshObjectGrid();
     }
 
+    private void initMonsterGrid(){
+        monsterGrid.add(new Label("Row"), 1, 0);
+        monsterGrid.add(new Label("Column"), 2, 0);
+    }
+
     private void refreshMonsterGrid() {
-        monsterGrid.getChildren().removeIf(node ->
-                GridPane.getRowIndex(node) != null &&
-                        GridPane.getRowIndex(node) > 0
-        );
+        monsterGrid.getChildren().clear();
+
+        if(!monsterRows.isEmpty()){
+            initMonsterGrid();
+        }
 
         if(monsterRows.size() < 15){
             addMonsterButton.setDisable(false);
@@ -187,4 +192,7 @@ public class SetupController {
     }
 
 
+    public void handleBackToMenu(ActionEvent actionEvent) {
+        SceneController.switchTo("/ui/menu/Menu.fxml");
+    }
 }
