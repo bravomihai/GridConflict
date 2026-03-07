@@ -9,7 +9,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Label;
 
+import model.Point;
 import org.w3c.dom.Text;
+import ui.components.EntityRow;
 import ui.components.MonsterRow;
 import ui.components.PlayerRow;
 import ui.core.SceneController;
@@ -18,7 +20,9 @@ import ui.components.ObjectRow;
 import util.IntRange;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SetupController {
     @FXML private VBox root;
@@ -41,7 +45,7 @@ public class SetupController {
     @FXML private Button addMonsterButton;
     List<MonsterRow> monsterRows = new ArrayList<>();
 
-    @FXML private Button backToMenuButton;
+    @FXML Button startGameButton;
 
     @FXML
     private void initialize() {
@@ -78,7 +82,90 @@ public class SetupController {
             playerGrid.add(B.getFields().get(i), i + 1, 2);
         }
 
+        addSetupListener(A);
+        addSetupListener(B);
+
         playerRows.addAll(List.of(A, B));
+        validateSetup();
+    }
+
+    private void validateSetup() {
+
+        Set<Point> occupied = new HashSet<>();
+        Set<Point> duplicates = new HashSet<>();
+
+        boolean valid = true;
+
+        List<EntityRow> all = new ArrayList<>();
+        all.addAll(playerRows);
+        all.addAll(objectRows);
+        all.addAll(monsterRows);
+
+        for (EntityRow e : all) {
+
+            String rowText = e.getRowField().getText();
+            String colText = e.getColField().getText();
+
+            if (rowText.isEmpty() || colText.isEmpty()) continue;
+
+            int r = Integer.parseInt(rowText);
+            int c = Integer.parseInt(colText);
+
+            Point p = new Point(r, c);
+
+            if (!occupied.add(p)) {
+                duplicates.add(p);
+            }
+        }
+
+
+        for (EntityRow e : all) {
+
+            String rowText = e.getRowField().getText();
+            String colText = e.getColField().getText();
+
+            if (rowText.isEmpty() || colText.isEmpty()) {
+                e.getRowField().setStyle("");
+                e.getColField().setStyle("");
+                markInvalid(e, false);
+                valid = false;
+                continue;
+            }
+
+            int r = Integer.parseInt(rowText);
+            int c = Integer.parseInt(colText);
+
+            Point p = new Point(r, c);
+
+            if(duplicates.contains(p) || e.getFields().stream().anyMatch(f -> f.getText().isEmpty()))
+                valid = false;
+
+            markInvalid(e, duplicates.contains(p));
+            markValid(e, duplicates.contains(p));
+        }
+
+        startGameButton.setDisable(!valid);
+    }
+
+    public void addSetupListener(EntityRow e){
+        e.getFields().stream().forEach(f -> f.textProperty().addListener((obs,o,n)->validateSetup()));
+    }
+
+    private void markInvalid(EntityRow e, boolean duplicate) {
+        e.getFields().stream() .filter(f -> f.getText().isEmpty())
+                .forEach(f -> f.setStyle("-fx-border-color: red;"));
+        if(duplicate){
+            e.getRowField().setStyle("-fx-border-color:red;");
+            e.getColField().setStyle("-fx-border-color:red;");
+        }
+    }
+
+    private void markValid(EntityRow e, boolean duplicate) {
+        e.getFields().stream().skip(2).filter(f->!f.getText().isEmpty() ).forEach(f -> f.setStyle(""));
+        if(!duplicate){
+            e.getRowField().setStyle("");
+            e.getColField().setStyle("");
+        }
     }
 
     private void updateCoordinateLimits() {
@@ -136,12 +223,15 @@ public class SetupController {
     public void handleAddObject(ActionEvent actionEvent) {
         ObjectRow objectRow = new ObjectRow(rowRange, colRange);
 
+        addSetupListener(objectRow);
+
         objectRow.getRemoveButton().setOnAction(e -> {
             objectRows.remove(objectRow);
             refreshObjectGrid();
         });
 
         objectRows.add(objectRow);
+        validateSetup();
         refreshObjectGrid();
     }
 
@@ -182,12 +272,15 @@ public class SetupController {
     public void handleAddMonster(ActionEvent actionEvent) {
         MonsterRow monsterRow  = new MonsterRow(rowRange, colRange);
 
+        addSetupListener(monsterRow);
+
         monsterRow.getRemoveButton().setOnAction( e-> {
             monsterRows.remove(monsterRow);
             refreshMonsterGrid();
         });
 
         monsterRows.add(monsterRow);
+        validateSetup();
         refreshMonsterGrid();
     }
 
@@ -195,4 +288,6 @@ public class SetupController {
     public void handleBackToMenu(ActionEvent actionEvent) {
         SceneController.switchTo("/ui/menu/Menu.fxml");
     }
+
+    public void handleStartGame(ActionEvent actionEvent) { SceneController.switchTo("/ui/game/Game.fxml");}
 }

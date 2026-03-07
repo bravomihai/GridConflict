@@ -79,6 +79,12 @@
 
     </HBox>
 
+    <Button fx:id="startGameButton" text="Start Game" onAction="#handleStartGame"/>
+
+    <padding>
+        <Insets top="20"/>
+    </padding>
+
     <Button fx:id="backToMenuButton" text="Back" onAction="#handleBackToMenu"/>
 
     <padding>

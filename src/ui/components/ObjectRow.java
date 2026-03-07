@@ -9,14 +9,7 @@ import util.IntRange;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ObjectRow {
-
-    private List<TextField> fields;
-
-    //coordinates
-    private TextField row;
-    private TextField col;
-
+public class ObjectRow extends EntityRow{
     //stats differences made by object
     private TextField dH;
     private TextField dA;
@@ -26,22 +19,16 @@ public class ObjectRow {
     private Button remove;
 
     public ObjectRow(IntRange rowRange, IntRange colRange) {
-        fields = new ArrayList<TextField>();
+        super(rowRange, colRange);
 
-        row = UIHelpers.configureTextField(rowRange, 0);
-        col = UIHelpers.configureTextField(colRange, 0);
         dH = UIHelpers.configureTextField(new IntRange(0, 999), 0);
         dA = UIHelpers.configureTextField(new IntRange(0, 999), 0);
         dD = UIHelpers.configureTextField(new IntRange(0, 999), 0);
         dS = UIHelpers.configureTextField(new IntRange(0, 999), 0);
 
-        fields.addAll(List.of(row, col, dH, dA, dD, dS));
+        super.getFields().addAll(List.of(dH, dA, dD, dS));
 
         remove = new Button("X");
-    }
-
-    public List<TextField> getFields() {
-        return fields;
     }
 
     public Item toItem() {
@@ -54,13 +41,5 @@ public class ObjectRow {
     }
 
     public Button getRemoveButton() {return remove; }
-
-    public TextField getRowField() {
-        return row;
-    }
-
-    public TextField getColField() {
-        return col;
-    }
 
 }

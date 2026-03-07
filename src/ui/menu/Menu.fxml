@@ -18,7 +18,7 @@
 
     <VBox alignment="CENTER" VBox.vgrow = "ALWAYS"
           spacing="20">
-        <Button text="Start Game" onAction="#handleStart"/>
+        <Button text="Setup Game" onAction="#handleStart"/>
         <Button text="Exit" onAction="#handleExit"/>
     </VBox>
 
