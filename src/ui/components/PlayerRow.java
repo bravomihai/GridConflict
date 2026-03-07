@@ -1,60 +1,61 @@
 package ui.components;
 
 import javafx.scene.control.Button;
-import javafx.scene.control.Spinner;
-import model.Player;
+import javafx.scene.control.TextField;
+import model.Item;
 import ui.util.UIHelpers;
+import util.IntRange;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerRow {
-    private List<Spinner<Integer>> spinners;
+
+    private List<TextField> fields;
 
     //coordinates
-    private Spinner<Integer> row;
-    private Spinner<Integer> col;
+    private TextField row;
+    private TextField col;
 
-    //player stats
-    private Spinner<Integer> H;
-    private Spinner<Integer> A;
-    private Spinner<Integer> D;
-    private Spinner<Integer> S;
+    //stats differences made by object
+    private TextField H;
+    private TextField A;
+    private TextField D;
+    private TextField S;
 
-    private Button remove;
+    public PlayerRow(IntRange rowRange, IntRange colRange) {
+        fields = new ArrayList<TextField>();
 
-    public PlayerRow() {
+        row = UIHelpers.configureTextField(rowRange, 0);
+        col = UIHelpers.configureTextField(colRange, 0);
+        H = UIHelpers.configureTextField(new IntRange(0, 999), 100);
+        A = UIHelpers.configureTextField(new IntRange(0, 999), 40);
+        D = UIHelpers.configureTextField(new IntRange(0, 999), 0);
+        S = UIHelpers.configureTextField(new IntRange(0, 999), 20);
 
-        spinners = new ArrayList<>();
+        fields.addAll(List.of(row, col, H, A, D, S));
 
-        row = new Spinner<>();
-        col = new Spinner<>();
-        H = new Spinner<>();
-        A = new Spinner<>();
-        D = new Spinner<>();
-        S = new Spinner<>();
-
-        UIHelpers.configureSpinner(row, 0, 999, 0);
-        UIHelpers.configureSpinner(col, 0, 999, 0);
-        UIHelpers.configureSpinner(H, 1, 999, 100);
-        UIHelpers.configureSpinner(A, 0, 999, 40);
-        UIHelpers.configureSpinner(D, 0, 999, 0);
-        UIHelpers.configureSpinner(S, 0, 999, 20);
-
-        spinners.addAll(List.of(row, col, H, A, D, S));
     }
 
-    public List<Spinner<Integer>> getSpinners() {
-        return spinners;
+    public List<TextField> getFields() {
+        return fields;
     }
 
-    public Player toPlayer() {
-        return new Player(
-                H.getValue(),
-                A.getValue(),
-                D.getValue(),
-                S.getValue(),
-                S.getValue()
+    public Item toItem() {
+        return new Item(
+                Integer.parseInt(H.getText()),
+                Integer.parseInt(A.getText()),
+                Integer.parseInt(D.getText()),
+                Integer.parseInt(S.getText())
         );
     }
+
+    public TextField getRowField() {
+        return row;
+    }
+
+    public TextField getColField() {
+        return col;
+    }
+
 }

@@ -13,31 +13,24 @@ public class MainApp extends Application{
 
     @Override
     public void start(Stage stage) {
+
         SceneController.init(stage);
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/ui/menu/Menu.fxml")
-            );
 
-            Parent root = loader.load();
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
 
-            Scene scene = new Scene(root);
-            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        double width = screenBounds.getWidth() * 0.8;
+        double height = screenBounds.getHeight() * 0.8;
 
-            double width = screenBounds.getWidth() * 0.8;
-            double height = screenBounds.getHeight() * 0.8;
+        stage.setWidth(width);
+        stage.setHeight(height);
+        stage.setMinWidth(width);
+        stage.setMinHeight(height);
 
-            stage.setWidth(width);
-            stage.setHeight(height);
-            stage.setMinWidth(width);
-            stage.setMinHeight(height);
-            stage.setScene(scene);
-            stage.setTitle("GridConflict");
-            stage.show();
+        stage.setTitle("GridConflict");
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        SceneController.switchTo("/ui/menu/Menu.fxml");
+
+        stage.show();
     }
 
     public static void main(String[] args){

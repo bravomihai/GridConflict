@@ -2,29 +2,47 @@ package ui.components;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Spinner;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.TextField;
 import model.Item;
+import ui.util.UIHelpers;
+import util.IntRange;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MonsterRow {
 
-    private HBox root;
+    private List<TextField> fields;
 
     //coordinates
-    private Spinner<Integer> row;
-    private Spinner<Integer> col;
+    private TextField row;
+    private TextField col;
 
     private Button remove;
 
-    public MonsterRow() {
+    public MonsterRow(IntRange rowRange, IntRange colRange) {
 
-        root = new HBox(10);
-        row = new Spinner<>();
-        col = new Spinner<>();
+        fields = new ArrayList<>(10);
+        row = UIHelpers.configureTextField(rowRange, 0);
+        col = UIHelpers.configureTextField(colRange, 0);
 
-        root.getChildren().addAll(row, col);
+        fields.addAll(List.of(row, col));
+
+        remove = new Button("X");
     }
 
-    public HBox getNode() {
-        return root;
+    public List<TextField> getFields() {
+        return fields;
     }
+
+    public Button getRemoveButton() {return remove; }
+
+    public TextField getRowField() {
+        return row;
+    }
+
+    public TextField getColField() {
+        return col;
+    }
+
 }

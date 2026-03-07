@@ -25,6 +25,11 @@ public class SceneController {
             Parent root = loader.load();
             Scene scene = new Scene(root);
 
+            //!!TO BE REMOVED
+            scene.getStylesheets().add(
+                    SceneController.class.getResource("/ui/style/dark.css").toExternalForm()
+            );
+
             primaryStage.setScene(scene);
 
         } catch (Exception e) {
