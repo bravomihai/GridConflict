@@ -5,10 +5,8 @@
 <?import javafx.scene.control.Label?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.control.TextField?>
 <VBox alignment="TOP_CENTER" spacing="20"
       xmlns:fx="http://javafx.com/fxml"
@@ -53,15 +51,15 @@
 
         </VBox>
 
-        <!--object pannel-->
+        <!--item pannel-->
         <VBox alignment="CENTER" spacing="20"
               HBox.hgrow="ALWAYS" maxWidth="Infinity">
 
-            <Label text="insert object stats"></Label>
+            <Label text="insert item stats"></Label>
 
-            <GridPane fx:id="objectGrid" alignment="CENTER"/>
+            <GridPane fx:id="itemGrid" alignment="CENTER"/>
 
-            <Button fx:id="addObjectButton" text="+" onAction="#handleAddObject"/>
+            <Button fx:id="addItemButton" text="+" onAction="#handleAddItem"/>
 
         </VBox>
 

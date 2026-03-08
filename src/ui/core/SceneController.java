@@ -1,5 +1,6 @@
 package ui.core;
 
+import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -37,4 +38,7 @@ public class SceneController {
         }
     }
 
+    public static Stage getStage() {
+        return primaryStage;
+    }
 }

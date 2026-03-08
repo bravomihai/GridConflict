@@ -14,10 +14,10 @@ public abstract class EntityRow {
     private TextField row;
     private TextField col;
 
-    public EntityRow(IntRange rowRange, IntRange colRange){
+    public EntityRow(IntRange rowRange, IntRange colRange, Runnable validator){
         fields = new ArrayList<>();
-        row = UIHelpers.configureTextField(rowRange, 0);
-        col = UIHelpers.configureTextField(colRange, 0);
+        row = UIHelpers.configureTextField(rowRange, 1, validator);
+        col = UIHelpers.configureTextField(colRange, 1, validator);
         fields.addAll(List.of(row, col));
     }
 

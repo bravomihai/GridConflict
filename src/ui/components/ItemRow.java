@@ -6,10 +6,9 @@ import model.Item;
 import ui.util.UIHelpers;
 import util.IntRange;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class ObjectRow extends EntityRow{
+public class ItemRow extends EntityRow{
     //stats differences made by object
     private TextField dH;
     private TextField dA;
@@ -18,13 +17,13 @@ public class ObjectRow extends EntityRow{
 
     private Button remove;
 
-    public ObjectRow(IntRange rowRange, IntRange colRange) {
-        super(rowRange, colRange);
+    public ItemRow(IntRange rowRange, IntRange colRange, Runnable validator) {
+        super(rowRange, colRange, validator);
 
-        dH = UIHelpers.configureTextField(new IntRange(0, 999), 0);
-        dA = UIHelpers.configureTextField(new IntRange(0, 999), 0);
-        dD = UIHelpers.configureTextField(new IntRange(0, 999), 0);
-        dS = UIHelpers.configureTextField(new IntRange(0, 999), 0);
+        dH = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
+        dA = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
+        dD = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
+        dS = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
 
         super.getFields().addAll(List.of(dH, dA, dD, dS));
 
@@ -33,6 +32,8 @@ public class ObjectRow extends EntityRow{
 
     public Item toItem() {
         return new Item(
+                Integer.parseInt(getRowField().getText()),
+                Integer.parseInt(getColField().getText()),
                 Integer.parseInt(dH.getText()),
                 Integer.parseInt(dA.getText()),
                 Integer.parseInt(dD.getText()),

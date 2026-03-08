@@ -11,8 +11,7 @@ public class GameState {
 
     public Player[] players = new Player[2];
     public List<Item> items = new ArrayList<>();
-
-    public String encodedMap;
+    public List<Monster> monsters = new ArrayList<>();
 
     public String toEngineString() {
         StringBuilder sb = new StringBuilder();
@@ -44,8 +43,33 @@ public class GameState {
                     .append(it.dS).append("\n");
         }
 
-        sb.append(encodedMap);
+        sb.append(toEncodedMap());
 
         return sb.toString();
     }
+
+    public char indexToRow(int rowIndex){
+        if(rowIndex <= 26){
+            return (char) ('A' + rowIndex - 1);
+        }
+        else{
+            return (char) ('a' + rowIndex - 27);
+        }
+    }
+
+    public String toEncodedMap(){
+        StringBuilder encodedMap = new StringBuilder();
+
+        encodedMap.append("A " + indexToRow(players[0].row) + players[0].col);
+        encodedMap.append(" B " + indexToRow(players[1].row) + players[1].col);
+        for(int i = 0 ; i < items.size(); i++){
+            encodedMap.append(" o" + i + " " + indexToRow(items.get(i).row) + items.get(i).col);
+        }
+        for(int i = 0 ; i < monsters.size(); i++){
+            encodedMap.append(" m " + indexToRow(monsters.get(i).row) + monsters.get(i).col);
+        }
+
+        return encodedMap.toString();
+    }
+
 }

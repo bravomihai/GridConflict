@@ -4,9 +4,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import util.IntRange;
 
+import static ui.util.UIAnimations.pulsateErrorBorder;
+
 
 public class UIHelpers {
-    public static TextField configureTextField(IntRange range, int defaultValue) {
+    public static TextField configureTextField(IntRange range, int defaultValue, Runnable validator) {
 
         TextField field = new TextField(String.valueOf(defaultValue));
         field.setPrefWidth(55);
@@ -20,10 +22,15 @@ public class UIHelpers {
             }
 
             if (!newText.matches("\\d+")) {
+                pulsateErrorBorder(field, validator);
                 return null;
             }
 
             int value = Integer.parseInt(newText);
+
+            if (value < range.getMin() || value > range.getMax()) {
+                pulsateErrorBorder(field, validator);
+            }
 
             int clamped = Math.max(range.getMin(), Math.min(value, range.getMax()));
 
@@ -40,7 +47,7 @@ public class UIHelpers {
         return field;
     }
 
-    public static void configureTextField(TextField field, IntRange range, int defaultValue) {
+    public static void configureTextField(TextField field, IntRange range, int defaultValue, Runnable validator) {
 
         field.setText(String.valueOf(defaultValue));
         field.setPrefWidth(55);
@@ -54,10 +61,15 @@ public class UIHelpers {
             }
 
             if (!newText.matches("\\d+")) {
+                pulsateErrorBorder(field, validator);
                 return null;
             }
 
             int value = Integer.parseInt(newText);
+
+            if (value < range.getMin() || value > range.getMax()) {
+                pulsateErrorBorder(field, validator);
+            }
 
             int clamped = Math.max(range.getMin(), Math.min(value, range.getMax()));
 
@@ -71,5 +83,7 @@ public class UIHelpers {
 
         field.setTextFormatter(formatter);
     }
+
+
 
 }
