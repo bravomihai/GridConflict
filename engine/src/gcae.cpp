@@ -1,6 +1,7 @@
 #include "gcae.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cctype>
 #include <fstream>
 #include <iostream>
@@ -709,13 +710,25 @@ static int static_eval(const game_state &gs, char root_player)
 {
     int p = (root_player == 'A') ? 0 : 1;
     int o = 1 - p;
+
     if (game_over_check(gs) && gs.players[p].H > 0)
         return INF;
     if (game_over_check(gs) && gs.players[p].H <= 0)
         return -INF;
-    int score = (int)gs.players[p].H + gs.players[p].A + gs.players[p].D + gs.players[p].S -
-                ((int)gs.players[o].H + gs.players[o].A + gs.players[o].D + gs.players[o].S);
-    return score;
+
+    int dmg_p = std::max(1, gs.players[p].A - gs.players[o].D);
+    int dmg_o = std::max(1, gs.players[o].A - gs.players[p].D);
+
+    int turns_to_kill_o = (gs.players[o].H + dmg_p - 1) / dmg_p;
+    int turns_to_kill_p = (gs.players[p].H + dmg_o - 1) / dmg_o;
+
+    int tempo_score = (turns_to_kill_p - turns_to_kill_o) * 100;
+
+    int stat_score =
+        gs.players[p].H + gs.players[p].A + gs.players[p].D + gs.players[p].S -
+        (gs.players[o].H + gs.players[o].A + gs.players[o].D + gs.players[o].S);
+
+    return tempo_score + stat_score;
 }
 
 /* minimax_search
@@ -788,7 +801,7 @@ static int minimax_search(const game_state &gs, int depth, char current_player, 
     }
 }
 
-Move best_move(const char* file_name)
+EngineResult best_move(const char* file_name)
 {
     std::ifstream fin(file_name);
     if (!fin.is_open())
@@ -797,27 +810,34 @@ Move best_move(const char* file_name)
         m.type = 'p';
         m.torow = '.';
         m.tocol = 0;
-        return m;
+        return {m, -INF, 0};
     }
 
     return best_move_from_stream(fin);
 }
 
+double score_to_chance(int score)
+{
+    const double K = 200.0;   // scaling factor
+
+    if(score >= INF) return 1.0;
+    if(score <= -INF) return 0.0;
+
+    return 1.0 / (1.0 + std::exp(-score / K));
+}
+
 /* best_move
  - Parse input file, run next_states + minimax, return best Move.
  - current_player is the player that must act now. */
-Move best_move_from_stream(std::istream& fin)
+EngineResult best_move_from_stream(std::istream& fin)
 {
-    Move nullm;
-    nullm.type = 'p';
-    nullm.torow = '.';
-    nullm.tocol = 0;
+    EngineResult nullRes = {{'p', '.', 0}, -INF, 0};
 
-    int H, W;
+    int H, W, depth;
     char current_player;
-    fin >> H >> W >> current_player;
+    fin >> H >> W >> current_player >> depth;
     if (!fin)
-        return nullm;
+        return nullRes;
 
     game_state gs;
     fin >> gs.players[0].H >> gs.players[0].A >> gs.players[0].D >> gs.players[0].s >> gs.players[0].S;
@@ -843,12 +863,11 @@ Move best_move_from_stream(std::istream& fin)
 
     int nStates = next_states(H, W, gs, current_player, items, ngs, moves);
     if (nStates <= 0)
-        return nullm;
+        return nullRes;
 
     int best_index = 0;
     int best_score = -INF;
 
-    int depth = 30;
     for (int i = 0; i < nStates; ++i)
     {
         int alpha = -INF, beta = INF;
@@ -869,5 +888,5 @@ Move best_move_from_stream(std::istream& fin)
         }
     }
 
-    return moves[best_index];
+    return {moves[best_index], best_score, score_to_chance(best_score)};
 }

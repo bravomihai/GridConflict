@@ -26,13 +26,13 @@ int main()
 
         std::istringstream iss(fullInput);
 
-        Move mv = best_move_from_stream(iss);
+        EngineResult result = best_move_from_stream(iss);
 
-        std::cout << mv.type << ' '
-                  << mv.torow << ' '
-                  << mv.tocol << '\n';
-
-        std::cout.flush();
+        std::cout << result.move.type << ' '
+                  << result.move.torow << ' '
+                  << result.move.tocol << ' '
+                  << result.score << ' '
+                  << result.winChance << std::endl;
     }
 
     return 0;
