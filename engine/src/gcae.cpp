@@ -731,13 +731,36 @@ static int static_eval(const game_state &gs, char root_player)
     return tempo_score + stat_score;
 }
 
+/* close_game_eval
+ - Evaluates a position when the game is forced to end due to too many consecutive passes.
+ - The winner is decided by comparing the overall stats of both players.
+ - Returns +INF if the root_player has the advantage, otherwise -INF. */
+static int close_game_eval(const game_state &gs, char root_player){
+    int p = (root_player == 'A') ? 0 : 1;
+    int o = 1 - p;
+
+    int stat_score =
+        gs.players[p].H + gs.players[p].A + gs.players[p].D + gs.players[p].S -
+        (gs.players[o].H + gs.players[o].A + gs.players[o].D + gs.players[o].S);
+
+    if(stat_score > 0){
+        return INF;
+    }
+    return -INF;
+
+}
+
 /* minimax_search
  - Depth-limited minimax with alpha-beta pruning.
  - current_player is the player to move at this node; root_player is the evaluation perspective.
  - Respects move types and stamina to decide depth progression. */
 static int minimax_search(const game_state &gs, int depth, char current_player, char root_player, int H, int W,
-                          const std::vector<item> &items, int &alpha, int &beta)
+                          const std::vector<item> &items, int &alpha, int &beta, int consecutivePasses, int &maxpasses)
 {
+    if(consecutivePasses >= maxpasses){
+        return close_game_eval(gs, root_player);
+    }
+
     if (depth == 0 || game_over_check(gs))
         return static_eval(gs, root_player);
 
@@ -759,12 +782,17 @@ static int minimax_search(const game_state &gs, int depth, char current_player, 
         {
             char next_player = current_player;
 
-            if (moves[i].type == 'p')
+            if (moves[i].type == 'p'){
                 next_player = (current_player == 'A') ? 'B' : 'A';
+                consecutivePasses++;
+            }
+            else{
+                consecutivePasses = 0;
+            }
 
             int next_depth = (moves[i].type == 'p') ? depth - 1 : depth;
 
-            int eval = minimax_search(ngs[i], next_depth, next_player, root_player, H, W, items, alpha, beta);
+            int eval = minimax_search(ngs[i], next_depth, next_player, root_player, H, W, items, alpha, beta, consecutivePasses, maxpasses);
 
             max_eval = std::max(max_eval, eval);
             alpha = std::max(alpha, eval);
@@ -783,12 +811,17 @@ static int minimax_search(const game_state &gs, int depth, char current_player, 
         {
             char next_player = current_player;
 
-            if (moves[i].type == 'p')
+            if (moves[i].type == 'p'){
                 next_player = (current_player == 'A') ? 'B' : 'A';
+                consecutivePasses++;
+            }
+            else{
+                consecutivePasses = 0;
+            }
 
             int next_depth = (moves[i].type == 'p') ? depth - 1 : depth;
 
-            int eval = minimax_search(ngs[i], next_depth, next_player, root_player, H, W, items, alpha, beta);
+            int eval = minimax_search(ngs[i], next_depth, next_player, root_player, H, W, items, alpha, beta, consecutivePasses, maxpasses);
 
             min_eval = std::min(min_eval, eval);
             beta = std::min(beta, eval);
@@ -816,7 +849,7 @@ EngineResult best_move(const char* file_name)
     return best_move_from_stream(fin);
 }
 
-double score_to_chance(int score)
+double score_to_chance(int score) // sigmoid function
 {
     const double K = 200.0;   // scaling factor
 
@@ -870,7 +903,7 @@ EngineResult best_move_from_stream(std::istream& fin)
 
     for (int i = 0; i < nStates; ++i)
     {
-        int alpha = -INF, beta = INF;
+        int alpha = -INF, beta = INF, consecutivePasses = 0, maxpasses = std::min(depth, 10);
         int score = minimax_search(
             ngs[i],
             depth,
@@ -878,7 +911,9 @@ EngineResult best_move_from_stream(std::istream& fin)
             current_player,
             H, W,
             items,
-            alpha, beta
+            alpha, beta,
+            consecutivePasses,
+            maxpasses
         );
 
         if (score > best_score)
