@@ -34,7 +34,6 @@ public class PlayerRow extends EntityRow{
                 Integer.parseInt(H.getText()),
                 Integer.parseInt(A.getText()),
                 Integer.parseInt(D.getText()),
-                Integer.parseInt(S.getText()),
                 Integer.parseInt(S.getText())
         );
     }

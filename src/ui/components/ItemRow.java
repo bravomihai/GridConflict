@@ -10,6 +10,7 @@ import java.util.List;
 
 public class ItemRow extends EntityRow{
     //stats differences made by object
+    private int nr;
     private TextField dH;
     private TextField dA;
     private TextField dD;
@@ -17,9 +18,10 @@ public class ItemRow extends EntityRow{
 
     private Button remove;
 
-    public ItemRow(IntRange rowRange, IntRange colRange, Runnable validator) {
+    public ItemRow(IntRange rowRange, IntRange colRange, int nr, Runnable validator) {
         super(rowRange, colRange, validator);
 
+        this.nr = nr;
         dH = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
         dA = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
         dD = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
@@ -32,6 +34,7 @@ public class ItemRow extends EntityRow{
 
     public Item toItem() {
         return new Item(
+                nr,
                 Integer.parseInt(getRowField().getText()),
                 Integer.parseInt(getColField().getText()),
                 Integer.parseInt(dH.getText()),

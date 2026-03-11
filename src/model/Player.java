@@ -9,13 +9,13 @@ public class Player {
     public int s;
     public int S;
 
-    public Player(int row, int col, int H, int A, int D, int s, int S) {
+    public Player(int row, int col, int H, int A, int D, int S) {
         this.row = row;
         this.col = col;
         this.H = H;
         this.A = A;
         this.D = D;
-        this.s = s;
+        this.s = S;
         this.S = S;
     }
 }

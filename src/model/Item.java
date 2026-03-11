@@ -1,6 +1,7 @@
 package model;
 
 public class Item {
+    public int nr;
     public int row;
     public int col;
     public int dH;
@@ -8,7 +9,8 @@ public class Item {
     public int dD;
     public int dS;
 
-    public Item(int row, int col, int dH, int dA, int dD, int dS) {
+    public Item(int nr, int row, int col, int dH, int dA, int dD, int dS) {
+        this.nr = nr;
         this.row = row;
         this.col = col;
         this.dH = dH;
