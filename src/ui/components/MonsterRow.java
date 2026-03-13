@@ -19,8 +19,8 @@ public class MonsterRow extends EntityRow{
         }
 
         return new Monster(
-                Integer.parseInt(getRowField().getText()),
-                Integer.parseInt(getColField().getText())
+                parseOrSentinel(getRowField().getText()),
+                parseOrSentinel(getColField().getText())
         );
     }
 

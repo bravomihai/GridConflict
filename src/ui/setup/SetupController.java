@@ -1,6 +1,7 @@
 package ui.setup;
 
 import content.PresetGameStates;
+import enginebridge.NativeEngine;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,7 +11,9 @@ import model.GameState;
 import ui.core.SceneController;
 import ui.game.GameController;
 
+
 import java.net.URL;
+
 
 public class SetupController {
 
@@ -26,7 +29,6 @@ public class SetupController {
 
     private GameState gameState = new GameState();
 
-
     @FXML
     private void initialize() {
 
@@ -34,12 +36,22 @@ public class SetupController {
         PresetGameStates presetGameStates = new PresetGameStates();
         gameState = presetGameStates.get(0);
 
-        mapSetupController.setGameState(gameState);
-        gameSetupController.setGameState(gameState);
 
-        startGameButton.disableProperty().bind(
-                gameState.validProperty().not()
-        );
+        //map setup (upper part of setup page)
+        mapSetupController.setGameState(gameState);
+        mapSetupController.setSceneWidth(SceneController.getStage().getWidth());
+        mapSetupController.resize();
+        mapSetupController.setOnSetupChanged(gameSetupController::computeBalance);
+
+        //game setup (lower part of setup page)
+        gameSetupController.setGameState(gameState);
+        gameSetupController.setSceneWidth(SceneController.getStage().getWidth());
+        gameSetupController.resize();
+        gameSetupController.difficultySlider.valueProperty().addListener((_, _, newVal) -> {
+            gameSetupController.computeBalance();
+        });
+        gameSetupController.computeBalance();
+
 
         SceneController.getStage().widthProperty().addListener((_, _, newV) ->{
                 mapSetupController.setSceneWidth(newV.doubleValue());
@@ -49,11 +61,12 @@ public class SetupController {
             }
         );
 
-        mapSetupController.setSceneWidth(SceneController.getStage().getWidth());
-        mapSetupController.resize();
-        gameSetupController.setSceneWidth(SceneController.getStage().getWidth());
-        gameSetupController.resize();
+        startGameButton.disableProperty().bind(
+                gameState.validProperty().not()
+        );
+
     }
+
 
     public void handleBackToMenu() {
         SceneController.switchTo("/ui/menu/Menu.fxml");

@@ -63,11 +63,17 @@ public class NativeEngine {
         return sb.toString();
     }
 
-    public CompletableFuture<EngineResult> computeMoveAsync(GameState state) {
+    public CompletableFuture<EngineResult> computeMoveAsync(GameState gameState) {
+        if(!gameState.isValid()){
+            return CompletableFuture.completedFuture(
+                    new EngineResult("c . 0 -536870911 0.0")
+            );
+        }
+
         return CompletableFuture.supplyAsync(() -> {
             try {
 
-                writer.write(toEngineString(state));
+                writer.write(toEngineString(gameState));
                 writer.newLine();
                 writer.write("END");
                 writer.newLine();

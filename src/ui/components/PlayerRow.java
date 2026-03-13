@@ -28,22 +28,13 @@ public class PlayerRow extends EntityRow{
     }
 
     public Player toPlayer() {
-        if (getRowField().getText().isEmpty() ||
-                getColField().getText().isEmpty() ||
-                H.getText().isEmpty() ||
-                A.getText().isEmpty() ||
-                D.getText().isEmpty() ||
-                S.getText().isEmpty()) {
-            return null;
-        }
-
         return new Player(
-                Integer.parseInt(getRowField().getText()),
-                Integer.parseInt(getColField().getText()),
-                Integer.parseInt(H.getText()),
-                Integer.parseInt(A.getText()),
-                Integer.parseInt(D.getText()),
-                Integer.parseInt(S.getText())
+                parseOrSentinel(getRowField().getText()),
+                parseOrSentinel(getColField().getText()),
+                parseOrSentinel(H.getText()),
+                parseOrSentinel(A.getText()),
+                parseOrSentinel(D.getText()),
+                parseOrSentinel(S.getText())
         );
     }
 }

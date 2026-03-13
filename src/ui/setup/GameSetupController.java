@@ -24,76 +24,17 @@ public class GameSetupController {
     @FXML
     private void initialize(){
 
-
-
-        initBalanceBar();
-
         initDifficultySlider();
 
     }
 
-    public void resize(){
+    public void resize() {
 
-    }
-
-    private void recomputeBalance(){
-        Path exePath = Paths.get(
-                System.getProperty("user.dir"),
-                "engine",
-                "build",
-                "grid_conflict.exe"
-        ).toAbsolutePath();
-
-        int depth;
-
-        switch ((int)difficultySlider.getValue()) {
-            case 0 -> depth = 1;
-            case 1 -> depth = 6;
-            case 2 -> depth = 15;
-            case 3 -> depth = 30;
-            default -> depth = 1;
-        };
-
-        NativeEngine engine;
-        try {
-            engine = new NativeEngine(exePath.toString(), depth);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return;
-        }
-
-        EngineResult res = engine.computeMoveAsync(gameState).join();
-
-        System.out.println(depth + " " + res.winChance);
-
-
-        balanceBar.setProgress(res.winChance);
-        engine.shutdown();
-    }
-
-
-    private void initBalanceBar(){
-        balanceBar.sceneProperty().addListener((_, _, newScene) -> {
-            if (newScene != null) {
-                difficultySlider.maxWidthProperty().bind(
-                        newScene.widthProperty().multiply(0.1)
-                );
-            }
-        });
+        difficultySlider.setMaxWidth(sceneWidth * 0.1);
+        balanceBar.setMaxWidth(sceneWidth * 0.1);
     }
 
     private void initDifficultySlider(){
-        difficultySlider.sceneProperty().addListener((_, _, newScene) -> {
-            if (newScene != null) {
-                difficultySlider.maxWidthProperty().bind(
-                        newScene.widthProperty().multiply(0.1)
-                );
-            }
-        });
-
-        difficultySlider.valueProperty().addListener((_, _, newVal) -> {
-            recomputeBalance();
-        });
 
         difficultySlider.setLabelFormatter(new StringConverter<>() {
             @Override
@@ -112,14 +53,61 @@ public class GameSetupController {
                 return 0.0;
             }
         });
+
+    }
+
+    private int getDepth() {
+        return switch ((int) difficultySlider.getValue()) {
+            case 0 -> 3;
+            case 1 -> 7;
+            case 2 -> 15;
+            case 3 -> 30;
+            default -> 0;
+        };
+    }
+
+    public void computeBalance(){
+        Path exePath = Paths.get(
+                System.getProperty("user.dir"),
+                "engine",
+                "build",
+                "grid_conflict.exe"
+        ).toAbsolutePath();
+
+        NativeEngine engine;
+        try {
+            engine = new NativeEngine(exePath.toString(), getDepth());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return;
+        }
+
+        EngineResult res = engine.computeMoveAsync(gameState).join();
+
+        balanceBar.setProgress(res.winChance);
+        engine.shutdown();
     }
 
     public void setSceneWidth(double newWidth){
         sceneWidth = newWidth;
     }
 
-
     public void setGameState(GameState gs){
+
         this.gameState = gs;
+
+        gameState.validProperty().addListener((_, _, valid) -> {
+
+            if (valid) {
+                balanceBar.getStyleClass().remove("invalid");
+                computeBalance();
+            } else {
+                if (!balanceBar.getStyleClass().contains("invalid")) {
+                    balanceBar.getStyleClass().add("invalid");
+                }
+                balanceBar.setProgress(1.0);
+            }
+
+        });
     }
 }

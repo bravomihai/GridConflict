@@ -28,3 +28,7 @@
 .progress-bar .bar {
     -fx-background-color: #00ff88;
 }
+
+.progress-bar.invalid .bar {
+    -fx-background-color: red;
+}

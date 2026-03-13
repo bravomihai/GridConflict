@@ -19,6 +19,8 @@ public class GameState {
     private List<Item> items = new ArrayList<>();
     private List<Monster> monsters = new ArrayList<>();
 
+    private static final int Sho = 32768;
+
     public GameState(){
         this.players = java.util.List.of(
                         new Player(1, 1, 100, 40, 0, 20),
@@ -67,7 +69,7 @@ public class GameState {
             ));
         }
 
-        recomputeValidity();
+        computeValidity();
     }
 
     // getters / setters
@@ -80,7 +82,7 @@ public class GameState {
         return valid.get();
     }
 
-    private void recomputeValidity() {
+    private void computeValidity() {
         valid.set(validate());
     }
 
@@ -94,7 +96,7 @@ public class GameState {
 
     public void setHeight(int h) {
         this.H = h;
-        recomputeValidity();
+        computeValidity();
     }
 
     public int getWidth() {
@@ -103,7 +105,7 @@ public class GameState {
 
     public void setWidth(int w) {
         this.W = w;
-        recomputeValidity();
+        computeValidity();
     }
 
     public int getPlayerIndex() {
@@ -120,7 +122,7 @@ public class GameState {
 
     public void setPlayers(List<Player> players) {
         this.players = new ArrayList<>(players);
-        recomputeValidity();
+        computeValidity();
     }
 
     public Player getPlayer(int index) {
@@ -129,7 +131,7 @@ public class GameState {
 
     public void setPlayer(int index, Player player) {
         this.players.set(index, player);
-        recomputeValidity();
+        computeValidity();
     }
 
     public List<Item> getItems() {
@@ -138,7 +140,7 @@ public class GameState {
 
     public void setItems(List<Item> items) {
         this.items = new ArrayList<>(items);
-        recomputeValidity();
+        computeValidity();
     }
 
     public List<Monster> getMonsters() {
@@ -147,7 +149,7 @@ public class GameState {
 
     public void setMonsters(List<Monster> monsters) {
         this.monsters = new ArrayList<>(monsters);
-        recomputeValidity();
+        computeValidity();
     }
 
     public String toEncodedMap(){
@@ -185,6 +187,11 @@ public class GameState {
     public void applyMove(Move move) throws InvalidMoveException {
         if (move == null) return;
 
+        //critical error
+        if(move.type == 'c'){
+            throw new InvalidMoveException("Critical error, invalid gamestate fed to engine!");
+        }
+
         // pass
         if (move.type == 'p') {
             consecutivePassRounds++;
@@ -195,7 +202,7 @@ public class GameState {
         int moveRow = rowCharToIndex(move.row);
         int moveCol = move.col;
 
-        if (moveRow == -1) {
+        if (moveRow < 0) {
             throw new InvalidMoveException("Invalid move row character");
         }
 
@@ -315,17 +322,19 @@ public class GameState {
 
         for (Player p : players) {
             Point pt = new Point(p.row, p.col);
-            if (outOfBounds(pt) || !occupied.add(pt)) return false;
+            if (outOfBounds(pt) || !occupied.add(pt) || p.row > Short.MAX_VALUE || p.col > Short.MAX_VALUE ||
+                    p.H > Short.MAX_VALUE || p.A > Short.MAX_VALUE || p.D > Short.MAX_VALUE || p.S > Short.MAX_VALUE) return false;
         }
 
         for (Item i : items) {
             Point pt = new Point(i.row, i.col);
-            if (outOfBounds(pt) || !occupied.add(pt)) return false;
+            if (outOfBounds(pt) || !occupied.add(pt) || i.row > Short.MAX_VALUE || i.col > Short.MAX_VALUE ||
+                    i.dH > Short.MAX_VALUE || i.dA > Short.MAX_VALUE || i.dD > Short.MAX_VALUE || i.dS > Short.MAX_VALUE) return false;
         }
 
         for (Monster m : monsters) {
             Point pt = new Point(m.row, m.col);
-            if (outOfBounds(pt) || !occupied.add(pt)) return false;
+            if (outOfBounds(pt) || !occupied.add(pt) || m.row > Short.MAX_VALUE || m.col > Short.MAX_VALUE) return false;
         }
 
         return true;

@@ -33,23 +33,14 @@ public class ItemRow extends EntityRow{
     }
 
     public Item toItem() {
-        if (getRowField().getText().isEmpty() ||
-                getColField().getText().isEmpty() ||
-                dH.getText().isEmpty() ||
-                dA.getText().isEmpty() ||
-                dD.getText().isEmpty() ||
-                dS.getText().isEmpty()) {
-            return null;
-        }
-
         return new Item(
                 nr,
-                Integer.parseInt(getRowField().getText()),
-                Integer.parseInt(getColField().getText()),
-                Integer.parseInt(dH.getText()),
-                Integer.parseInt(dA.getText()),
-                Integer.parseInt(dD.getText()),
-                Integer.parseInt(dS.getText())
+                parseOrSentinel(getRowField().getText()),
+                parseOrSentinel(getColField().getText()),
+                parseOrSentinel(dH.getText()),
+                parseOrSentinel(dA.getText()),
+                parseOrSentinel(dD.getText()),
+                parseOrSentinel(dS.getText())
         );
     }
 

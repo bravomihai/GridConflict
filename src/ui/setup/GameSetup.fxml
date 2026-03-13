@@ -16,7 +16,6 @@
     <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
         <Label text="Select Game Difficulty"/>
         <Slider fx:id="difficultySlider"
-                min="0"
                 max="3"
                 value="1"
                 majorTickUnit="1"

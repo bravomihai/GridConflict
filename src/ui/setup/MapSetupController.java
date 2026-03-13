@@ -17,6 +17,7 @@ import util.IntRange;
 
 import java.util.*;
 
+
 public class MapSetupController {
     @FXML public TextField mapHeightField;
     @FXML public TextField mapWidthField;
@@ -24,23 +25,37 @@ public class MapSetupController {
     private final IntRange colRange = new IntRange(1, 999);
 
     @FXML public GridPane playerGrid;
-    private final List<PlayerRow> playerRows = new ArrayList<>();
+    public final List<PlayerRow> playerRows = new ArrayList<>();
 
     @FXML public GridPane itemGrid;
     @FXML public Button addItemButton;
-    private final List<ItemRow> itemRows = new ArrayList<>();
+    public final List<ItemRow> itemRows = new ArrayList<>();
 
     @FXML public GridPane monsterGrid;
     @FXML public Button addMonsterButton;
-    private final List<MonsterRow> monsterRows = new ArrayList<>();
+    public final List<MonsterRow> monsterRows = new ArrayList<>();
 
     private GameState gameState;
 
     private double sceneWidth;
 
+    private Runnable onSetupChanged;
+
+    private static final int EMPTY = Short.MAX_VALUE + 1;
+
     @FXML
     private void initialize() {
 
+    }
+
+    public void setOnSetupChanged(Runnable r) {
+        this.onSetupChanged = r;
+    }
+
+    private void triggerSetupChanged() {
+        if (onSetupChanged != null && gameState.isValid()) {
+            onSetupChanged.run();
+        }
     }
 
     public void resize() {
@@ -137,7 +152,10 @@ public class MapSetupController {
     }
 
     public void addSetupListener(EntityRow e){
-        e.getFields().forEach(f -> f.textProperty().addListener((_, _, _)->updateGameState()));
+        e.getFields().forEach(f -> f.textProperty().addListener((_, _, _)->{
+            updateGameState();
+            triggerSetupChanged();
+        }));
     }
 
     private void markInvalid(EntityRow e, boolean duplicate) {
@@ -218,12 +236,15 @@ public class MapSetupController {
 
         itemRow.getRemoveButton().setOnAction(_ -> {
             itemRows.remove(itemRow);
+            updateGameState();
             refreshItemGrid();
+            triggerSetupChanged();
         });
         itemRows.add(itemRow);
 
         refreshItemGrid();
         updateGameState();
+        triggerSetupChanged();
     }
 
     private void initMonsterGrid(){
@@ -266,12 +287,16 @@ public class MapSetupController {
 
         monsterRow.getRemoveButton().setOnAction( _-> {
             monsterRows.remove(monsterRow);
+            updateGameState();
             refreshMonsterGrid();
+            triggerSetupChanged();
+
         });
         monsterRows.add(monsterRow);
 
         refreshMonsterGrid();
         updateGameState();
+        triggerSetupChanged();
     }
 
     public void setGameState(GameState gs) {
@@ -369,9 +394,15 @@ public class MapSetupController {
         if(!mapHeightField.getText().isEmpty()){
             gameState.setHeight(Integer.parseInt(mapHeightField.getText()));
         }
+        else{
+            gameState.setHeight(EMPTY);
+        }
 
         if(!mapWidthField.getText().isEmpty()){
             gameState.setWidth(Integer.parseInt(mapWidthField.getText()));
+        }
+        else{
+            gameState.setWidth(EMPTY);
         }
 
         rowRange.setMin(1);
@@ -381,15 +412,15 @@ public class MapSetupController {
         colRange.setMax(gameState.getWidth());
 
         gameState.setPlayers(
-                playerRows.stream().map(PlayerRow::toPlayer).filter(Objects::nonNull).toList()
+                playerRows.stream().map(PlayerRow::toPlayer).toList()
         );
 
         gameState.setItems(
-                itemRows.stream().map(ItemRow::toItem).filter(Objects::nonNull).toList()
+                itemRows.stream().map(ItemRow::toItem).toList()
         );
 
         gameState.setMonsters(
-                monsterRows.stream().map(MonsterRow::toMonster).filter(Objects::nonNull).toList()
+                monsterRows.stream().map(MonsterRow::toMonster).toList()
         );
 
         updateSetupUI();
