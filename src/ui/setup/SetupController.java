@@ -1,25 +1,18 @@
 package ui.setup;
 
-import javafx.event.ActionEvent;
+import content.PresetGameStates;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import model.GameState;
-import ui.components.ItemRow;
-import ui.components.MonsterRow;
 import ui.core.SceneController;
 import ui.game.GameController;
 
+import java.net.URL;
 
 public class SetupController {
-
-    @FXML
-    public Button startGameButton;
-
-    @FXML
-    public Button backToMenuButton;
 
     @FXML
     private MapSetupController mapSetupController;
@@ -27,37 +20,46 @@ public class SetupController {
     @FXML
     private GameSetupController gameSetupController;
 
+    @FXML public Button startGameButton;
+
+    @FXML public Button backToMenuButton;
+
+    private GameState gameState = new GameState();
+
+
     @FXML
     private void initialize() {
 
+        //ONLY FOR TESTING
+        PresetGameStates presetGameStates = new PresetGameStates();
+        gameState = presetGameStates.get(0);
+
+        mapSetupController.setGameState(gameState);
+        gameSetupController.setGameState(gameState);
+
         startGameButton.disableProperty().bind(
-                mapSetupController.setupValidProperty().not()
+                gameState.validProperty().not()
         );
 
+        SceneController.getStage().widthProperty().addListener((_, _, newV) ->{
+                mapSetupController.setSceneWidth(newV.doubleValue());
+                mapSetupController.resize();
+                gameSetupController.setSceneWidth(newV.doubleValue());
+                gameSetupController.resize();
+            }
+        );
+
+        mapSetupController.setSceneWidth(SceneController.getStage().getWidth());
+        mapSetupController.resize();
+        gameSetupController.setSceneWidth(SceneController.getStage().getWidth());
+        gameSetupController.resize();
     }
 
-    public void handleBackToMenu(ActionEvent actionEvent) {
+    public void handleBackToMenu() {
         SceneController.switchTo("/ui/menu/Menu.fxml");
     }
 
-    public void handleStartGame(ActionEvent e) throws Exception {
-
-        GameState state = new GameState();
-
-        state.H = Integer.parseInt(mapSetupController.mapHeightField.getText());
-        state.W = Integer.parseInt(mapSetupController.mapWidthField.getText());
-
-        state.players[0] = mapSetupController.playerRows.get(0).toPlayer();
-        state.players[1] = mapSetupController.playerRows.get(1).toPlayer();
-
-        for(ItemRow i : mapSetupController.itemRows){
-            state.items.add(i.toItem());
-        }
-
-        for(MonsterRow m : mapSetupController.monsterRows){
-            state.monsters.add(m.toMonster());
-        }
-
+    public void handleStartGame() throws Exception {
         FXMLLoader loader = new FXMLLoader(
                 getClass().getResource("/ui/game/Game.fxml")
         );
@@ -66,13 +68,14 @@ public class SetupController {
 
         GameController controller = loader.getController();
 
-        controller.initGame(state);
+        controller.initGame(gameState);
 
         Scene scene = new Scene(root);
 
-        scene.getStylesheets().add(
-                SceneController.class.getResource("/ui/style/dark.css").toExternalForm()
-        );
+        URL css = SceneController.class.getResource("/ui/style/dark.css");
+        if (css != null) {
+            scene.getStylesheets().add(css.toExternalForm());
+        }
 
         SceneController.getStage().setScene(scene);
     }

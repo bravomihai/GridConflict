@@ -13,6 +13,11 @@ public class MonsterRow extends EntityRow{
     }
 
     public Monster toMonster(){
+        if (getRowField().getText().isEmpty() ||
+                getColField().getText().isEmpty()){
+            return null;
+        }
+
         return new Monster(
                 Integer.parseInt(getRowField().getText()),
                 Integer.parseInt(getColField().getText())

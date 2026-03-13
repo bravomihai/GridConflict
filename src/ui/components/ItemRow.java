@@ -22,10 +22,10 @@ public class ItemRow extends EntityRow{
         super(rowRange, colRange, validator);
 
         this.nr = nr;
-        dH = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
-        dA = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
-        dD = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
-        dS = UIHelpers.configureTextField(new IntRange(0, 999), 0, validator);
+        dH = UIHelpers.configureSignedNumberField(new IntRange(0, 999), 0, validator);
+        dA = UIHelpers.configureSignedNumberField(new IntRange(0, 999), 0, validator);
+        dD = UIHelpers.configureSignedNumberField(new IntRange(0, 999), 0, validator);
+        dS = UIHelpers.configureSignedNumberField(new IntRange(0, 999), 0, validator);
 
         super.getFields().addAll(List.of(dH, dA, dD, dS));
 
@@ -33,6 +33,15 @@ public class ItemRow extends EntityRow{
     }
 
     public Item toItem() {
+        if (getRowField().getText().isEmpty() ||
+                getColField().getText().isEmpty() ||
+                dH.getText().isEmpty() ||
+                dA.getText().isEmpty() ||
+                dD.getText().isEmpty() ||
+                dS.getText().isEmpty()) {
+            return null;
+        }
+
         return new Item(
                 nr,
                 Integer.parseInt(getRowField().getText()),

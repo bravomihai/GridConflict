@@ -43,7 +43,6 @@ public class UIAnimations {
 
         timeline.setOnFinished(e -> {
             field.getProperties().remove("errorPulse");
-
             if (validator != null) {
                 validator.run();
             }

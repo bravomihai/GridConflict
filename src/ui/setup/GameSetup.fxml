@@ -9,6 +9,11 @@
       prefHeight="400.0" prefWidth="600.0">
 
     <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+        <Label text="Map Balance"/>
+        <ProgressBar fx:id="balanceBar"/>
+    </VBox>
+
+    <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
         <Label text="Select Game Difficulty"/>
         <Slider fx:id="difficultySlider"
                 min="0"
@@ -20,5 +25,6 @@
                 showTickMarks="true"
                 showTickLabels="true"/>
     </VBox>
+
 
 </HBox>

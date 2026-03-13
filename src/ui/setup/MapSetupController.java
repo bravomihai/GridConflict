@@ -1,7 +1,5 @@
 package ui.setup;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 
 import javafx.scene.control.Button;
@@ -9,7 +7,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.Label;
 
-import model.Point;
+import model.*;
 import ui.components.EntityRow;
 import ui.components.MonsterRow;
 import ui.components.PlayerRow;
@@ -17,10 +15,7 @@ import ui.util.UIHelpers;
 import ui.components.ItemRow;
 import util.IntRange;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class MapSetupController {
     @FXML public TextField mapHeightField;
@@ -28,52 +23,48 @@ public class MapSetupController {
     private final IntRange rowRange = new IntRange(1, 999);
     private final IntRange colRange = new IntRange(1, 999);
 
-    @FXML private GridPane playerGrid;
-    public List<PlayerRow> playerRows = new ArrayList<>();
+    @FXML public GridPane playerGrid;
+    private final List<PlayerRow> playerRows = new ArrayList<>();
 
-    @FXML private GridPane itemGrid;
-    @FXML private Button addItemButton;
-    public List<ItemRow> itemRows = new ArrayList<>();
+    @FXML public GridPane itemGrid;
+    @FXML public Button addItemButton;
+    private final List<ItemRow> itemRows = new ArrayList<>();
 
-    @FXML private GridPane monsterGrid;
-    @FXML private Button addMonsterButton;
-    public List<MonsterRow> monsterRows = new ArrayList<>();
+    @FXML public GridPane monsterGrid;
+    @FXML public Button addMonsterButton;
+    private final List<MonsterRow> monsterRows = new ArrayList<>();
 
-    private final BooleanProperty setupValid = new SimpleBooleanProperty(false);
+    private GameState gameState;
+
+    private double sceneWidth;
 
     @FXML
     private void initialize() {
-        //init map grid
-        UIHelpers.configureTextField(mapHeightField, new IntRange(1, 52), 7, this::validateSetup);
-        UIHelpers.configureTextField(mapWidthField, new IntRange(1, 99), 7, this::validateSetup);
-        updateCoordinateLimits();
 
-        mapHeightField.textProperty().addListener((_, _, _) -> updateCoordinateLimits());
-
-        mapWidthField.textProperty().addListener((_, _, _) -> updateCoordinateLimits());
-
-        //init player grid (no function since its only done once)
-        addCoordinateLabelsToGrid(playerGrid);
-        addStatisticLabelsToGrid(playerGrid);
-
-        PlayerRow  A = new PlayerRow(rowRange, colRange, this::validateSetup);
-        PlayerRow B = new PlayerRow(rowRange, colRange, this::validateSetup);
-        playerGrid.add(new Label("Player #1"), 0, 1);
-        playerGrid.add(new Label("Player #2"), 0, 2);
-
-        addRowToGrid(playerGrid, A, 1);
-        addRowToGrid(playerGrid, B, 2);
-
-        addSetupListener(A);
-        addSetupListener(B);
-
-
-        playerRows.addAll(List.of(A, B));
-        validateSetup();
     }
 
-    public BooleanProperty setupValidProperty() {
-        return setupValid;
+    public void resize() {
+
+        double fieldWidth = sceneWidth * 0.03;
+
+        mapHeightField.setPrefWidth(fieldWidth);
+        mapWidthField.setPrefWidth(fieldWidth);
+
+        for (PlayerRow r : playerRows) {
+            r.getFields().forEach(f -> f.setPrefWidth(fieldWidth));
+        }
+
+        for (ItemRow r : itemRows) {
+            r.getFields().forEach(f -> f.setPrefWidth(fieldWidth));
+        }
+
+        for (MonsterRow r : monsterRows) {
+            r.getFields().forEach(f -> f.setPrefWidth(fieldWidth));
+        }
+    }
+
+    public void setSceneWidth(double newWidth){
+        sceneWidth = newWidth;
     }
 
     private void addRowToGrid(GridPane grid, EntityRow e, int row){
@@ -94,12 +85,10 @@ public class MapSetupController {
         grid.add(new Label("Stamina"), 6, 0);
     }
 
-    private void validateSetup() {
+    private void updateSetupUI() {
 
         Set<Point> occupied = new HashSet<>();
         Set<Point> duplicates = new HashSet<>();
-
-        boolean valid = true;
 
         List<EntityRow> all = new ArrayList<>();
         all.addAll(playerRows);
@@ -132,7 +121,6 @@ public class MapSetupController {
                 e.getRowField().setStyle("");
                 e.getColField().setStyle("");
                 markInvalid(e, false);
-                valid = false;
                 continue;
             }
 
@@ -142,16 +130,14 @@ public class MapSetupController {
             Point p = new Point(r, c);
 
             if(duplicates.contains(p) || e.getFields().stream().anyMatch(f -> f.getText().isEmpty()))
-                valid = false;
+                markInvalid(e, duplicates.contains(p));
 
-            markInvalid(e, duplicates.contains(p));
             markValid(e, duplicates.contains(p));
         }
-        setupValid.set(valid);
     }
 
     public void addSetupListener(EntityRow e){
-        e.getFields().forEach(f -> f.textProperty().addListener((_, _, _)->validateSetup()));
+        e.getFields().forEach(f -> f.textProperty().addListener((_, _, _)->updateGameState()));
     }
 
     private void markInvalid(EntityRow e, boolean duplicate) {
@@ -171,22 +157,29 @@ public class MapSetupController {
         }
     }
 
-    private void updateCoordinateLimits() {
-
-        int height = Integer.parseInt(mapHeightField.getText());
-        int width = Integer.parseInt(mapWidthField.getText());
-
-        rowRange.setMin(1);
-        rowRange.setMax(height);
-
-        colRange.setMin(1);
-        colRange.setMax(width);
-
-    }
-
     private void initObjectGrid(){
         addCoordinateLabelsToGrid(itemGrid);
         addStatisticLabelsToGrid(itemGrid);
+    }
+
+    private void refreshPlayerGrid() {
+
+        playerGrid.getChildren().clear();
+
+        if (!playerRows.isEmpty()) {
+            addCoordinateLabelsToGrid(playerGrid);
+            addStatisticLabelsToGrid(playerGrid);
+        }
+
+        for (int r = 0; r < playerRows.size(); r++) {
+
+            PlayerRow obj = playerRows.get(r);
+
+            playerGrid.add(new Label("Player #" + (r + 1)), 0, r + 1);
+
+            addRowToGrid(playerGrid, obj, r + 1);
+        }
+        resize();
     }
 
     private void refreshItemGrid(){
@@ -215,10 +208,11 @@ public class MapSetupController {
             itemGrid.add(obj.getRemoveButton(), 7, r + 1);
         }
 
+        resize();
     }
 
     public void handleAddItem() {
-        ItemRow itemRow = new ItemRow(rowRange, colRange, itemRows.size(), this::validateSetup);
+        ItemRow itemRow = new ItemRow(rowRange, colRange, itemRows.size(), this::updateSetupUI);
 
         addSetupListener(itemRow);
 
@@ -226,10 +220,10 @@ public class MapSetupController {
             itemRows.remove(itemRow);
             refreshItemGrid();
         });
-
         itemRows.add(itemRow);
-        validateSetup();
+
         refreshItemGrid();
+        updateGameState();
     }
 
     private void initMonsterGrid(){
@@ -261,10 +255,12 @@ public class MapSetupController {
 
             monsterGrid.add(obj.getRemoveButton(), 3, r + 1);
         }
+
+        resize();
     }
 
     public void handleAddMonster() {
-        MonsterRow monsterRow  = new MonsterRow(rowRange, colRange, this::validateSetup);
+        MonsterRow monsterRow  = new MonsterRow(rowRange, colRange, this::updateSetupUI);
 
         addSetupListener(monsterRow);
 
@@ -272,10 +268,132 @@ public class MapSetupController {
             monsterRows.remove(monsterRow);
             refreshMonsterGrid();
         });
-
         monsterRows.add(monsterRow);
-        validateSetup();
+
         refreshMonsterGrid();
+        updateGameState();
+    }
+
+    public void setGameState(GameState gs) {
+
+        this.gameState = gs;
+
+        playerRows.clear();
+        itemRows.clear();
+        monsterRows.clear();
+
+        playerGrid.getChildren().clear();
+        itemGrid.getChildren().clear();
+        monsterGrid.getChildren().clear();
+
+        if (gs == null) return;
+
+        UIHelpers.configureUnsignedNumberField(mapHeightField , new IntRange(2, 52), gs.getHeight(), this::updateSetupUI);
+        UIHelpers.configureUnsignedNumberField(mapWidthField, new IntRange(2, 99), gs.getWidth(), this::updateSetupUI);
+        mapHeightField.textProperty().addListener((_, _, _) -> updateGameState());
+        mapWidthField.textProperty().addListener((_, _, _) -> updateGameState());
+
+        addCoordinateLabelsToGrid(playerGrid);
+        addStatisticLabelsToGrid(playerGrid);
+
+        for (int i = 0; i < gs.getPlayers().size(); i++) {
+
+            Player p = gs.getPlayers().get(i);
+
+            PlayerRow row = new PlayerRow(rowRange, colRange, this::updateSetupUI);
+
+            row.getRowField().setText(String.valueOf(p.row));
+            row.getColField().setText(String.valueOf(p.col));
+            row.getFields().get(2).setText(String.valueOf(p.H));
+            row.getFields().get(3).setText(String.valueOf(p.A));
+            row.getFields().get(4).setText(String.valueOf(p.D));
+            row.getFields().get(5).setText(String.valueOf(p.S));
+
+            addSetupListener(row);
+
+            playerGrid.add(new Label("Player #" + (i + 1)), 0, i + 1);
+            addRowToGrid(playerGrid, row, i + 1);
+
+            playerRows.add(row);
+        }
+
+        for (Item it : gs.getItems()) {
+
+            ItemRow row = new ItemRow(rowRange, colRange, itemRows.size(), this::updateSetupUI);
+
+            row.getRowField().setText(String.valueOf(it.row));
+            row.getColField().setText(String.valueOf(it.col));
+            row.getFields().get(2).setText(String.valueOf(it.dH));
+            row.getFields().get(3).setText(String.valueOf(it.dA));
+            row.getFields().get(4).setText(String.valueOf(it.dD));
+            row.getFields().get(5).setText(String.valueOf(it.dS));
+
+            addSetupListener(row);
+
+            row.getRemoveButton().setOnAction( _-> {
+                itemRows.remove(row);
+                refreshItemGrid();
+            });
+
+            itemRows.add(row);
+        }
+
+        for (Monster m : gs.getMonsters()) {
+
+            MonsterRow row = new MonsterRow(rowRange, colRange, this::updateSetupUI);
+
+            row.getRowField().setText(String.valueOf(m.row));
+            row.getColField().setText(String.valueOf(m.col));
+
+            addSetupListener(row);
+
+            row.getRemoveButton().setOnAction( _-> {
+                monsterRows.remove(row);
+                refreshMonsterGrid();
+            });
+
+            monsterRows.add(row);
+        }
+
+        refreshItemGrid();
+        refreshMonsterGrid();
+        refreshPlayerGrid();
+        updateGameState();
+    }
+
+    private void updateGameState() {
+        if (gameState == null) {
+            return;
+        }
+
+        if(!mapHeightField.getText().isEmpty()){
+            gameState.setHeight(Integer.parseInt(mapHeightField.getText()));
+        }
+
+        if(!mapWidthField.getText().isEmpty()){
+            gameState.setWidth(Integer.parseInt(mapWidthField.getText()));
+        }
+
+        rowRange.setMin(1);
+        rowRange.setMax(gameState.getHeight());
+
+        colRange.setMin(1);
+        colRange.setMax(gameState.getWidth());
+
+        gameState.setPlayers(
+                playerRows.stream().map(PlayerRow::toPlayer).filter(Objects::nonNull).toList()
+        );
+
+        gameState.setItems(
+                itemRows.stream().map(ItemRow::toItem).filter(Objects::nonNull).toList()
+        );
+
+        gameState.setMonsters(
+                monsterRows.stream().map(MonsterRow::toMonster).filter(Objects::nonNull).toList()
+        );
+
+        updateSetupUI();
+
     }
 
 }

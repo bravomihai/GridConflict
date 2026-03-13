@@ -352,7 +352,7 @@ int next_states(int H, int W, const game_state &gs, char current_player, const s
     int cp = (current_player == 'A') ? 0 : 1;
     int op = 1 - cp;
     char opp_char = (current_player == 'A') ? 'B' : 'A';
-    if (gs.players[cp].s == 0)
+    if (gs.players[cp].s <= 0)
     {
         end_round_state(ngs[state], gs, moves[state], cp, op);
         return 1;

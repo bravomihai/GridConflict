@@ -30,28 +30,28 @@ public class NativeEngine {
     public String toEngineString(GameState gs) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(gs.H).append(" ")
-                .append(gs.W).append(" ")
-                .append((gs.playerIndex == 0) ? 'A' : 'B').append(" ")
+        sb.append(gs.getHeight()).append(" ")
+                .append(gs.getWidth()).append(" ")
+                .append((gs.getPlayerIndex() == 0) ? 'A' : 'B').append(" ")
                 .append(engineDepth).append("\n");
 
-        Player p0 = gs.players[0];
+        Player p0 = gs.getPlayers().get(0);
         sb.append(p0.H).append(" ")
                 .append(p0.A).append(" ")
                 .append(p0.D).append(" ")
                 .append(p0.s).append(" ")
                 .append(p0.S).append("\n");
 
-        Player p1 = gs.players[1];
+        Player p1 = gs.getPlayers().get(1);
         sb.append(p1.H).append(" ")
                 .append(p1.A).append(" ")
                 .append(p1.D).append(" ")
                 .append(p1.s).append(" ")
                 .append(p1.S).append("\n");
 
-        sb.append(gs.items.size()).append("\n");
+        sb.append(gs.getItems().size()).append("\n");
 
-        for (Item it : gs.items) {
+        for (Item it : gs.getItems()) {
             sb.append(it.dH).append(" ")
                     .append(it.dA).append(" ")
                     .append(it.dD).append(" ")

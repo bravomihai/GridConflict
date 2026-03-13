@@ -1,131 +1,285 @@
 package model;
 
-import java.util.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 
-import static java.util.Collections.swap;
+import java.util.*;
 
 public class GameState {
 
-    public int consecutivePassRounds = 0;
-    public int H;
-    public int W;
-    public int playerIndex = 0;
-    public int opponentIndex = 1;
+    private final BooleanProperty valid = new SimpleBooleanProperty(false);
 
-    public Player[] players = new Player[2];
-    public List<Item> items = new ArrayList<>();
-    public List<Monster> monsters = new ArrayList<>();
+    private int consecutivePassRounds = 0;
+    private int H = 2;
+    private int W = 2;
+    private int playerIndex = 0;
+    private int opponentIndex = 1;
+
+    private List<Player> players = new ArrayList<>();
+    private List<Item> items = new ArrayList<>();
+    private List<Monster> monsters = new ArrayList<>();
+
+    public GameState(){
+        this.players = java.util.List.of(
+                        new Player(1, 1, 100, 40, 0, 20),
+                        new Player(2, 2, 100, 40, 0, 20)
+                );
+    }
+
+    public GameState(GameState other) {
+
+        this.consecutivePassRounds = other.consecutivePassRounds;
+        this.H = other.H;
+        this.W = other.W;
+        this.playerIndex = other.playerIndex;
+        this.opponentIndex = other.opponentIndex;
+
+        this.players = new ArrayList<>();
+        for (Player p : other.players) {
+            this.players.add(new Player(
+                    p.row,
+                    p.col,
+                    p.H,
+                    p.A,
+                    p.D,
+                    p.S
+            ));
+        }
+
+        this.items = new ArrayList<>();
+        for (Item i : other.items) {
+            this.items.add(new Item(
+                    i.nr,
+                    i.row,
+                    i.col,
+                    i.dH,
+                    i.dA,
+                    i.dD,
+                    i.dS
+            ));
+        }
+
+        this.monsters = new ArrayList<>();
+        for (Monster m : other.monsters) {
+            this.monsters.add(new Monster(
+                    m.row,
+                    m.col
+            ));
+        }
+
+        recomputeValidity();
+    }
+
+    // getters / setters
+
+    public BooleanProperty validProperty() {
+        return valid;
+    }
+
+    public boolean isValid() {
+        return valid.get();
+    }
+
+    private void recomputeValidity() {
+        valid.set(validate());
+    }
+
+    public int getConsecutivePassRounds() {
+        return consecutivePassRounds;
+    }
+
+    public int getHeight() {
+        return H;
+    }
+
+    public void setHeight(int h) {
+        this.H = h;
+        recomputeValidity();
+    }
+
+    public int getWidth() {
+        return W;
+    }
+
+    public void setWidth(int w) {
+        this.W = w;
+        recomputeValidity();
+    }
+
+    public int getPlayerIndex() {
+        return playerIndex;
+    }
+
+    public int getOpponentIndex() {
+        return opponentIndex;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
+    }
+
+    public void setPlayers(List<Player> players) {
+        this.players = new ArrayList<>(players);
+        recomputeValidity();
+    }
+
+    public Player getPlayer(int index) {
+        return players.get(index);
+    }
+
+    public void setPlayer(int index, Player player) {
+        this.players.set(index, player);
+        recomputeValidity();
+    }
+
+    public List<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = new ArrayList<>(items);
+        recomputeValidity();
+    }
+
+    public List<Monster> getMonsters() {
+        return monsters;
+    }
+
+    public void setMonsters(List<Monster> monsters) {
+        this.monsters = new ArrayList<>(monsters);
+        recomputeValidity();
+    }
 
     public String toEncodedMap(){
         StringBuilder encodedMap = new StringBuilder();
 
         encodedMap.append("A ")
-                .append(indexToRowChar(players[0].row))
-                .append(players[0].col);
+                .append(indexToRowChar(players.get(0).row))
+                .append(players.get(0).col);
 
         encodedMap.append(" B ")
-                .append(indexToRowChar(players[1].row))
-                .append(players[1].col);
+                .append(indexToRowChar(players.get(1).row))
+                .append(players.get(1).col);
 
         for(int i = 0 ; i < items.size(); i++){
-            encodedMap.append(" o" + i + " " + indexToRowChar(items.get(i).row) + items.get(i).col);
+            encodedMap.append(" o").append(i).append(" ")
+                    .append(indexToRowChar(items.get(i).row))
+                    .append(items.get(i).col);
         }
 
-        for(int i = 0 ; i < monsters.size(); i++){
-            encodedMap.append(" m " + indexToRowChar(monsters.get(i).row) + monsters.get(i).col);
+        for (Monster monster : monsters) {
+            encodedMap.append(" m ")
+                    .append(indexToRowChar(monster.row))
+                    .append(monster.col);
         }
 
         return encodedMap.toString();
     }
 
     public boolean isGameOver(){
-        return consecutivePassRounds >= 10 || players[playerIndex].H <= 0 || players[opponentIndex].H <= 0;
+        return consecutivePassRounds >= 10 ||
+                players.get(playerIndex).H <= 0 ||
+                players.get(opponentIndex).H <= 0;
     }
 
-    public void applyMove(GameState gs, Move move) throws InvalidMoveException{
-        if (gs == null || move == null) return;
+    public void applyMove(Move move) throws InvalidMoveException {
+        if (move == null) return;
 
-        if(move.type == 'p'){
+        // pass
+        if (move.type == 'p') {
             consecutivePassRounds++;
-            players[playerIndex].s = players[playerIndex].S;
-            int aux = playerIndex;
-            playerIndex = opponentIndex;
-            opponentIndex = aux;
+            switchTurn();
             return;
         }
 
-        int moveRow = rowCharToIndex(move.row), moveCol = move.col;
+        int moveRow = rowCharToIndex(move.row);
+        int moveCol = move.col;
 
-        if(moveRow == -1){
+        if (moveRow == -1) {
             throw new InvalidMoveException("Invalid move row character");
         }
 
-        if(moveRow < 1 || moveRow > H || moveCol < 1 || moveCol > W){
+        if (moveRow < 1 || moveRow > H || moveCol < 1 || moveCol > W) {
             throw new InvalidMoveException("Move coordinates out of bounds");
         }
 
-        if(move.type == 'm'){
+        // move (walk)
+        if (move.type == 'm') {
             consecutivePassRounds = 0;
+
             int dist = manhattan(
                     rowCharToIndex(move.row),
                     move.col,
-                    players[playerIndex].row,
-                    players[playerIndex].col
+                    players.get(playerIndex).row,
+                    players.get(playerIndex).col
             );
 
-            if(players[playerIndex].s < dist){
+            if (players.get(playerIndex).s < dist) {
                 throw new InvalidMoveException("The target is too far away");
             }
 
-            if (monsters.stream()
-                    .anyMatch(m -> m.row == moveRow && m.col == move.col)) {
+            if (monsters.stream().anyMatch(m -> m.row == moveRow && m.col == moveCol)) {
                 throw new InvalidMoveException("Target occupied by monster");
             }
-            if(players[opponentIndex].row == moveRow && players[opponentIndex].col == moveCol){
+            if (players.get(opponentIndex).row == moveRow && players.get(opponentIndex).col == moveCol) {
                 throw new InvalidMoveException("Target occupied by opponent");
             }
 
-            items.stream()
-                    .filter(i -> i.row == moveRow && i.col == move.col)
-                    .findFirst()
-                    .ifPresent(i -> {
-                        players[playerIndex].H += i.dH;
-                        players[playerIndex].A += i.dA;
-                        players[playerIndex].D += i.dD;
-                        players[playerIndex].S += i.dS;
-                        items.remove(i);
-                    });
-            players[playerIndex].row = moveRow;
-            players[playerIndex].col = move.col;
-            players[playerIndex].s -= dist;
+            // pick up item if present
+            Optional<Item> optItem = items.stream()
+                    .filter(i -> i.row == moveRow && i.col == moveCol)
+                    .findFirst();
+            if (optItem.isPresent()) {
+                Item i = optItem.get();
+                players.get(playerIndex).H += i.dH;
+                players.get(playerIndex).A += i.dA;
+                players.get(playerIndex).D += i.dD;
+                players.get(playerIndex).S += i.dS;
+                items.remove(i);
+            }
+
+            players.get(playerIndex).row = moveRow;
+            players.get(playerIndex).col = move.col;
+            players.get(playerIndex).s -= dist;
         }
 
-        if(move.type == 'a'){
+        // attack
+        if (move.type == 'a') {
             consecutivePassRounds = 0;
-            if(players[playerIndex].s < 10){
+
+            if (players.get(playerIndex).s < 10) {
                 throw new InvalidMoveException("Not enough stamina for the attack");
             }
 
-            if(monsters.stream().noneMatch(m -> m.row == moveRow && m.col == move.col) &&
-                    (players[opponentIndex].row != moveRow || players[opponentIndex].col != moveCol)){
+            boolean monsterAtTarget = monsters.stream().anyMatch(m -> m.row == moveRow && m.col == moveCol);
+            boolean opponentAtTarget = players.get(opponentIndex).row == moveRow && players.get(opponentIndex).col == moveCol;
+
+            if (!monsterAtTarget && !opponentAtTarget) {
                 throw new InvalidMoveException("No entity in attacked cell");
             }
 
-            monsters.stream()
-                    .filter(m -> m.row == moveRow && m.col == move.col)
-                    .findFirst()
-                    .ifPresent(m -> {
-                        players[playerIndex].H += 10;
-                        players[playerIndex].s -= 10;
-                        monsters.remove(m);
-                    });
+            Optional<Monster> optMonster = monsters.stream()
+                    .filter(m -> m.row == moveRow && m.col == moveCol)
+                    .findFirst();
+            if (optMonster.isPresent()) {
+                Monster m = optMonster.get();
+                players.get(playerIndex).H += 10;
+                players.get(playerIndex).s -= 10;
+                monsters.remove(m);
+            }
 
-            if(players[opponentIndex].row == moveRow && players[opponentIndex].col == moveCol){
-                players[opponentIndex].H += Math.min(players[opponentIndex].D - players[playerIndex].A, 0);
-                players[playerIndex].s -= 10;
+            if (opponentAtTarget) {
+                players.get(opponentIndex).H += Math.min(players.get(opponentIndex).D - players.get(playerIndex).A, 0);
+                players.get(playerIndex).s -= 10;
             }
         }
+    }
 
+    public void switchTurn(){
+        players.get(playerIndex).s = players.get(playerIndex).S;
+        int aux = playerIndex;
+        playerIndex = opponentIndex;
+        opponentIndex = aux;
     }
 
     private static int manhattan(int rowA, int colA, int rowB, int colB) {
@@ -145,6 +299,36 @@ public class GameState {
         else{
             return (char) ('a' + rowIndex - 27);
         }
+    }
+
+    private boolean outOfBounds(Point p) {
+        return p.row < 1 || p.row > H || p.col < 1 || p.col > W;
+    }
+
+    public boolean validate() {
+
+        Set<Point> occupied = new HashSet<>();
+
+        if (H < 2 || W < 2 || H > 52 || W > 99) return false;
+
+        if (players.size() < 2 || players.get(0) == null || players.get(1) == null) return false;
+
+        for (Player p : players) {
+            Point pt = new Point(p.row, p.col);
+            if (outOfBounds(pt) || !occupied.add(pt)) return false;
+        }
+
+        for (Item i : items) {
+            Point pt = new Point(i.row, i.col);
+            if (outOfBounds(pt) || !occupied.add(pt)) return false;
+        }
+
+        for (Monster m : monsters) {
+            Point pt = new Point(m.row, m.col);
+            if (outOfBounds(pt) || !occupied.add(pt)) return false;
+        }
+
+        return true;
     }
 
 }

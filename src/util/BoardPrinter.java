@@ -6,39 +6,33 @@ public class BoardPrinter {
 
     public static void printBoard(GameState gs) {
 
-        char[][] board = new char[gs.H][gs.W];
+        char[][] board = new char[gs.getHeight()][gs.getWidth()];
 
-        for(int r = 0; r < gs.H; r++){
-            for(int c = 0; c < gs.W; c++){
+        for (int r = 0; r < gs.getHeight(); r++) {
+            for (int c = 0; c < gs.getWidth(); c++) {
                 board[r][c] = '.';
             }
         }
 
-        // items
-        for(int i = 0; i < gs.items.size(); i++){
-            Item it = gs.items.get(i);
+        for (Item it : gs.getItems()) {
             int r = it.row - 1;
             int c = it.col - 1;
-            board[r][c] = (char)('0' + it.nr);
+            board[r][c] = (char) ('0' + it.nr);
         }
 
-        // monsters
-        for(Monster m : gs.monsters){
+        for (Monster m : gs.getMonsters()) {
             int r = m.row - 1;
             int c = m.col - 1;
             board[r][c] = 'M';
         }
 
-        // players
-        board[gs.players[0].row - 1][gs.players[0].col - 1] = 'A';
-        board[gs.players[1].row - 1][gs.players[1].col - 1] = 'B';
+        board[gs.getPlayers().get(0).row - 1][gs.getPlayers().get(0).col - 1] = 'A';
+        board[gs.getPlayers().get(1).row - 1][gs.getPlayers().get(1).col - 1] = 'B';
 
-        //stats
+        Player pA = gs.getPlayers().get(0);
+        Player pB = gs.getPlayers().get(1);
 
-        Player pA = gs.players[0];
-        Player pB = gs.players[1];
-
-        char current = (gs.playerIndex == 0 ? 'A' : 'B');
+        char current = (gs.getPlayerIndex() == 0 ? 'A' : 'B');
 
         System.out.println("Current Player: " + current);
         System.out.println("A:" +
@@ -52,26 +46,23 @@ public class BoardPrinter {
                 " D=" + pB.D +
                 " S=" + pB.s + "/" + pB.S);
 
-        // tens line
         System.out.print(" ");
-        for(int c = 1; c <= gs.W; c++){
+        for (int c = 1; c <= gs.getWidth(); c++) {
             System.out.print((c / 10) % 10);
         }
         System.out.println();
 
-        // units line
         System.out.print(" ");
-        for(int c = 1; c <= gs.W; c++){
+        for (int c = 1; c <= gs.getWidth(); c++) {
             System.out.print(c % 10);
         }
         System.out.println();
 
-        // board
-        for(int r = 0; r < gs.H; r++){
+        for (int r = 0; r < gs.getHeight(); r++) {
 
             System.out.print(indexToRowChar(r));
 
-            for(int c = 0; c < gs.W; c++){
+            for (int c = 0; c < gs.getWidth(); c++) {
                 System.out.print(board[r][c]);
             }
 
@@ -81,8 +72,6 @@ public class BoardPrinter {
         System.out.println(gs.toEncodedMap());
 
         System.out.println("===========\n");
-
-
     }
 
     private static char indexToRowChar(int idx) {
