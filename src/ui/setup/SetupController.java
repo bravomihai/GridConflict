@@ -34,7 +34,7 @@ public class SetupController {
 
         //ONLY FOR TESTING
         PresetGameStates presetGameStates = new PresetGameStates();
-        gameState = presetGameStates.get(0);
+        gameState = presetGameStates.get(3);
 
 
         //map setup (upper part of setup page)

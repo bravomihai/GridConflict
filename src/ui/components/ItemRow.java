@@ -22,10 +22,10 @@ public class ItemRow extends EntityRow{
         super(rowRange, colRange, validator);
 
         this.nr = nr;
-        dH = UIHelpers.configureSignedNumberField(new IntRange(0, 999), 0, validator);
-        dA = UIHelpers.configureSignedNumberField(new IntRange(0, 999), 0, validator);
-        dD = UIHelpers.configureSignedNumberField(new IntRange(0, 999), 0, validator);
-        dS = UIHelpers.configureSignedNumberField(new IntRange(0, 999), 0, validator);
+        dH = UIHelpers.configureSignedNumberField(new IntRange(-999, 999), 0, validator);
+        dA = UIHelpers.configureSignedNumberField(new IntRange(-999, 999), 0, validator);
+        dD = UIHelpers.configureSignedNumberField(new IntRange(-999, 999), 0, validator);
+        dS = UIHelpers.configureSignedNumberField(new IntRange(-999, 999), 0, validator);
 
         super.getFields().addAll(List.of(dH, dA, dD, dS));
 

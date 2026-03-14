@@ -15,7 +15,7 @@ public class Main {
 
         PresetGameStates presetGameStates = new PresetGameStates();
 
-        GameState gs = presetGameStates.get(0);
+        GameState gs = presetGameStates.get(3);
 
         Path exePath = Paths.get(
                 System.getProperty("user.dir"),

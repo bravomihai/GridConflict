@@ -39,10 +39,6 @@ struct game_state
     std::string s; // encoded map string
 };
 
-// Public utilities (optional but useful for tests)
-void encode(int H, int W, const std::vector<std::vector<char>> &board, std::string &out);
-void decode(int H, int W, std::vector<std::vector<char>> &board, const std::string &in);
-
 // Core API
 // Reads file_name, returns the best move, move score and win chance with the move for the current player.
 EngineResult best_move_from_stream(std::istream& in);

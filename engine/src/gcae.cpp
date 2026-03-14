@@ -33,83 +33,6 @@ static inline int rowCharToIndex(char c)
     return -1;
 }
 
-/* encode
- - Serialize a 2D board into the engine's compact state string.
- - Emits tokens only for letters/digits, prefixed with 'o' for numeric objects. */
-void encode(int H, int W, const std::vector<std::vector<char>> &board, std::string &out)
-{
-    out.clear();
-    for (int r = 0; r < H; ++r)
-    {
-        for (int c = 0; c < W; ++c)
-        {
-            char ch = board[r][c];
-            if (!(std::isdigit(static_cast<unsigned char>(ch)) || std::isupper(static_cast<unsigned char>(ch)) ||
-                  std::islower(static_cast<unsigned char>(ch))))
-                continue;
-            if (std::isdigit(static_cast<unsigned char>(ch)))
-                out.push_back('o');
-            out.push_back(ch);
-            out.push_back(' ');
-            out.push_back(indexToRowChar(r));
-            int col = c + 1;
-            if (col >= 10)
-                out.push_back(char('0' + (col / 10) % 10));
-            out.push_back(char('0' + (col % 10)));
-            out.push_back(' ');
-        }
-    }
-}
-
-/* decode
- - Parse the compact state string and populate the board matrix.
- - Handles 1- and 2-digit columns and optional 'o' prefixes; defensive to malformed tokens. */
-void decode(int H, int W, std::vector<std::vector<char>> &board, const std::string &s)
-{
-    for (int i = 0; i < H; ++i)
-        board[i].assign(W, '.');
-
-    size_t i = 0, n = s.size();
-    while (i < n)
-    {
-        if (s[i] == ' ')
-        {
-            ++i;
-            continue;
-        }
-        bool is_obj = false;
-        if (s[i] == 'o')
-        {
-            is_obj = true;
-            ++i;
-            if (i >= n)
-                break;
-        }
-        char ent = s[i++]; // entity char
-        if (i < n && s[i] == ' ')
-            ++i;
-        if (i >= n)
-            break;
-        char rowChar = s[i++];
-        int row = rowCharToIndex(rowChar);
-        if (row < 0)
-            continue;
-        if (i >= n)
-            break;
-        int col = s[i++] - '0';
-        if (i < n && std::isdigit(static_cast<unsigned char>(s[i])))
-        {
-            col = col * 10 + (s[i++] - '0');
-        }
-        if (row >= 0 && row < H && col >= 1 && col <= W)
-        {
-            board[row][col - 1] = ent;
-        }
-        if (i < n && s[i] == ' ')
-            ++i;
-    }
-}
-
 /* getrow
  - Read a single row character from encoded token at pos and advance pos.
  - Lightweight helper used by parsing routines. */
@@ -513,16 +436,9 @@ int next_states(int H, int W, const game_state &gs, char current_player, const s
                             ++state;
                         }
                     }
-                    else
-                    {
-                        end_round_state(ngs[state], gs, moves[state], cp, op);
-                        ++state;
-                    }
                 }
                 else
                 {
-                    end_round_state(ngs[state], gs, moves[state], cp, op);
-                    ++state;
                     break;
                 }
             }
@@ -581,10 +497,6 @@ int next_states(int H, int W, const game_state &gs, char current_player, const s
                     ngs[state] = std::move(dest);
                     moves[state] = mm;
                 }
-            }
-            else
-            {
-                end_round_state(ngs[state], gs, moves[state], cp, op);
             }
         }
         ++state;
@@ -674,10 +586,6 @@ int next_states(int H, int W, const game_state &gs, char current_player, const s
                                 ngs[state] = std::move(dest);
                                 moves[state] = mm;
                             }
-                        }
-                        else
-                        {
-                            end_round_state(ngs[state], gs, moves[state], cp, op);
                         }
                         ++state;
                         progressed = true;

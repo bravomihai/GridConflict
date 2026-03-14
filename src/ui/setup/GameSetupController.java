@@ -84,6 +84,8 @@ public class GameSetupController {
 
         EngineResult res = engine.computeMoveAsync(gameState).join();
 
+        System.out.println(res.winChance);
+
         balanceBar.setProgress(res.winChance);
         engine.shutdown();
     }
